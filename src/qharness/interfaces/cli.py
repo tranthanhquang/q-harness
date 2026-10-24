@@ -150,14 +150,73 @@ def _emit(value: object, json_output: bool) -> None:
         typer.echo(redact(value))
 
 
+def _discover_repositories(workspace: Path) -> list[Path]:
+    return sorted(
+        (path for path in workspace.iterdir() if path.is_dir() and (path / ".git").exists()),
+        key=lambda path: path.name.casefold(),
+    )
+
+
+def _repository_role(name: str) -> str:
+    return {"fe": "frontend", "be": "backend"}.get(name.casefold(), name)
+
+
+def _select_repositories(candidates: list[Path]) -> list[Path]:
+    selected = set(range(len(candidates)))
+    while True:
+        typer.echo("Repositories found (all selected):")
+        for index, path in enumerate(candidates):
+            typer.echo(
+                f"  [{'x' if index in selected else ' '}] {index + 1}. {path.name} "
+                f"({_repository_role(path.name)}) - {path}"
+            )
+        choice = typer.prompt("Toggle numbers, Enter to confirm, or q to skip", default="")
+        if not choice:
+            return [path for index, path in enumerate(candidates) if index in selected]
+        if choice.casefold() == "q":
+            return []
+        try:
+            indexes = {int(value.strip()) - 1 for value in choice.split(",")}
+            if not indexes or any(index not in range(len(candidates)) for index in indexes):
+                raise ValueError
+        except ValueError:
+            typer.echo(f"Enter numbers from 1 to {len(candidates)}, separated by commas.")
+            continue
+        selected.symmetric_difference_update(indexes)
+
+
 @app.command("init")
 def init_project(
     name: str = typer.Option(..., "--name"),
     workspace: Path = typer.Option(..., "--workspace"),
     json_output: bool = typer.Option(False, "--json"),
 ) -> None:
-    project = _projects().create(name, workspace)
+    service = _projects()
+    project = service.create(name, workspace)
     _emit(project_data(project), json_output)
+    if json_output:
+        return
+
+    registered = {Path(repo.canonical_path) for repo in service.repositories(project.id)}
+    candidates = [
+        path
+        for path in _discover_repositories(Path(project.workspace_path))
+        if path.resolve() not in registered
+    ]
+    if not candidates:
+        typer.echo("No unregistered Git repositories found in workspace subfolders.")
+        typer.echo("To add a repository manually:")
+        typer.echo("  qh project add /path/to/repository --role ROLE --name NAME")
+        return
+
+    chosen = _select_repositories(candidates)
+    if not chosen:
+        typer.echo("No repositories selected. Add one later with:")
+        typer.echo("  qh project add /path/to/repository --role ROLE --name NAME")
+        return
+    for path in chosen:
+        service.add_repository(project.id, path, _repository_role(path.name), path.name)
+        typer.echo(f"Added {path.name} ({_repository_role(path.name)}): {path}")
 
 
 @project_app.command("add")

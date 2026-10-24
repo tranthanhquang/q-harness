@@ -48,11 +48,23 @@ mục bền vững nếu muốn giữ demo lâu dài.
 
 ### Dùng repository thật
 
-Thay bước tạo fixture bằng các thư mục Git đang có. Tạo workspace riêng:
+Thay bước tạo fixture bằng các thư mục Git đang có. Đặt các repo ngay dưới
+workspace rồi chạy `qh init` không có `--json`; harness sẽ liệt kê repo để chọn.
+Nhập số để bật/tắt repo, nhấn Enter để xác nhận. Tên thư mục `fe` và `be` có role
+mặc định lần lượt là `frontend` và `backend`; tên khác dùng chính tên thư mục làm
+role. Nếu không tìm thấy repo, thêm bằng `qh project add` như ví dụ dưới đây.
+
+`--json` không mở màn hình chọn và không tự add repo; sau đó dùng `qh project add`
+thủ công.
 
 ```bash
-qh init --name 'My Project' --workspace /absolute/path/to/workspace --json
+qh init --name 'My Project' --workspace /absolute/path/to/workspace
 export QH_PROJECT_ID='UUID-tu-ket-qua-init'
+```
+
+Chỉ chạy lệnh dưới đây nếu cần tự add repo hoặc `qh init` không tìm thấy chúng:
+
+```bash
 qh project add /absolute/path/to/api --role api --name api
 qh project add /absolute/path/to/web --role web --name web
 ```
