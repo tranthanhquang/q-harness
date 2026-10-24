@@ -1,0 +1,124 @@
+[build-system]
+requires = ["hatchling==1.28.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "q-harness"
+version = "0.1.0"
+description = "Local-first, project-scoped engineering harness"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["harness", "agents", "mcp", "developer-tools"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+  "alembic==1.20.0",
+  "defusedxml==0.7.1",
+  "docxtpl==0.20.2",
+  "fastapi==0.158.0",
+  "jsonschema==4.26.0",
+  "Jinja2==3.1.6",
+  "mcp==2.0.0",
+  "openai==2.8.1",
+  "openpyxl==3.1.5",
+  "psycopg[binary]==3.3.2",
+  "pydantic==2.13.1",
+  "pydantic-settings==2.12.0",
+  "python-docx==1.2.0",
+  "PyYAML==6.0.3",
+  "SQLAlchemy==2.1.0",
+  "tree-sitter==0.25.2",
+  "tree-sitter-python==0.25.0",
+  "tree-sitter-typescript==0.23.2",
+  "typer==0.26.0",
+  "uvicorn==0.54.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy==1.18.2",
+  "pytest==9.0.2",
+  "pytest-cov==7.0.0",
+  "ruff==0.14.2",
+  "types-PyYAML==6.0.12.20260906",
+  "types-jsonschema==4.26.0.20261006",
+  "types-openpyxl==3.1.5.20261017",
+  "types-defusedxml==0.7.0.20260504",
+]
+
+[project.scripts]
+qh = "qharness.interfaces.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/qharness"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/tests",
+  "/migrations",
+  "/scripts",
+  "/docs",
+  "/specs",
+  "/.github",
+  "/.env.example",
+  "/.gitignore",
+  "/.dockerignore",
+  "/.editorconfig",
+  "/.gitattributes",
+  "/README.md",
+  "/LICENSE",
+  "/CONTRIBUTING.md",
+  "/SECURITY.md",
+  "/CHANGELOG.md",
+  "/alembic.ini",
+  "/compose.yaml",
+  "/constraints.txt",
+  "/Dockerfile.sandbox",
+]
+
+[tool.pytest.ini_options]
+addopts = "-ra --strict-config --strict-markers"
+testpaths = ["tests"]
+markers = [
+  "integration: requires PostgreSQL or another external boundary",
+  "contract: validates a public interface contract",
+  "e2e: validates a complete user journey",
+  "security: validates a trust boundary",
+  "acceptance_scale: expensive acceptance-scale benchmark",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [".python"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S", "SIM"]
+ignore = ["S101"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["typer.Option"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests launch fixed fixtures and deliberately try a non-loopback address.
+"tests/**" = ["S603", "S607", "S104"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+strict = true
+packages = ["qharness"]
+
+[[tool.mypy.overrides]]
+module = ["docxtpl"]
+ignore_missing_imports = true
+

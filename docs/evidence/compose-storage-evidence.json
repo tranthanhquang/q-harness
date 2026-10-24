@@ -1,0 +1,7 @@
+{
+  "postgres_image": "postgres:18.1-alpine",
+  "named_volume_mount": "/var/lib/postgresql",
+  "container_recreated": true,
+  "stored_row_after_recreation": "preserved",
+  "existing_deployment_modified": false
+}

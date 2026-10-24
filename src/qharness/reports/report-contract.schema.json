@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://q-harness.local/schemas/report-contract.schema.json",
+  "title": "Q-Harness report.md front matter",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "template_id",
+    "version",
+    "scope",
+    "output_format",
+    "template_file",
+    "language",
+    "required_permission",
+    "data_sources",
+    "required_sections",
+    "missing_data_policy",
+    "validation"
+  ],
+  "properties": {
+    "template_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "scope": {
+      "enum": ["project", "platform"]
+    },
+    "output_format": {
+      "enum": ["docx", "xlsx"]
+    },
+    "template_file": {
+      "type": "string",
+      "pattern": "^[^/\\\\]+\\.(docx|xlsx)$"
+    },
+    "language": {
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$"
+    },
+    "required_permission": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "data_sources": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "project",
+          "repositories",
+          "knowledge",
+          "work_items",
+          "tasks",
+          "executions",
+          "test_runs",
+          "artifacts"
+        ]
+      }
+    },
+    "required_sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "required_fields": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "default": []
+          }
+        }
+      }
+    },
+    "missing_data_policy": {
+      "enum": ["fail", "ask", "mark_missing", "mark_na"]
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["openable", "no_unresolved_placeholders", "preserve_template_checksum"],
+      "properties": {
+        "openable": {"const": true},
+        "no_unresolved_placeholders": {"const": true},
+        "preserve_template_checksum": {"const": true},
+        "required_sheets": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "required_named_ranges": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        }
+      }
+    }
+  }
+}
+

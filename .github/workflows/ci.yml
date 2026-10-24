@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:18.1-alpine
+        env:
+          POSTGRES_USER: qharness
+          POSTGRES_PASSWORD: qharness
+          POSTGRES_DB: qharness
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U qharness -d qharness"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      QH_DATABASE_URL: postgresql+psycopg://qharness:qharness@127.0.0.1:55432/qharness
+      QH_TEST_DATABASE_URL: postgresql+psycopg://qharness:qharness@127.0.0.1:55432/qharness
+      QH_SANDBOX_IMAGE: q-harness-sandbox:dev
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - name: Install system tools and PostgreSQL 18 clients
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-common ripgrep
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client-18
+          echo "/usr/lib/postgresql/18/bin" >> "$GITHUB_PATH"
+      - name: Install Python dependencies
+        run: python -m pip install --constraint constraints.txt -e '.[dev]' hatchling==1.28.0
+      - name: Build execution sandbox
+        run: docker build -f Dockerfile.sandbox -t q-harness-sandbox:dev .
+      - name: Check formatting
+        run: ruff format --check .
+      - name: Lint
+        run: ruff check .
+      - name: Check types
+        run: mypy
+      - name: Check installed dependencies
+        run: python -m pip check
+      - name: Run tests without the opt-in scale benchmark
+        run: pytest -q --ignore=tests/performance
+      - name: Build wheel and source archive
+        run: python -m hatchling build

@@ -1,0 +1,14 @@
+ARG SANDBOX_BASE_IMAGE=python:3.12-slim-bookworm@sha256:6a0e06f5ba0b373d051aabd3fffb9b873f27f9a2a3a14bcbe37dee6f0e3bbc70
+FROM ${SANDBOX_BASE_IMAGE}
+
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y git ripgrep nodejs npm \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 runner
+
+RUN pip install --no-cache-dir docxtpl==0.20.2 python-docx==1.2.0 openpyxl==3.1.5 defusedxml==0.7.1
+
+USER runner
+WORKDIR /workspace
+ENTRYPOINT ["/bin/sh", "-lc"]
+

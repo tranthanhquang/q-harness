@@ -1,0 +1,30 @@
+{
+  "date": "2026-10-24",
+  "host": "macOS arm64",
+  "installation": "fresh venv, wheel install then editable extracted sdist",
+  "checks": [
+    "fresh-archive migrations",
+    "two-repository registration",
+    "index",
+    "search",
+    "ask with citations",
+    "one-file refresh",
+    "weekly-progress report READY",
+    "test-results report READY"
+  ],
+  "result": "PASS",
+  "live_model": "NOT_RUN",
+  "github_hosted_ci": "NOT_RUN",
+  "automated_tests": {
+    "passed": 110,
+    "seconds": 21.14,
+    "skipped": 0
+  },
+  "static_checks": "PASS",
+  "package_builds": "wheel and sdist, including rebuild from extracted sdist: PASS",
+  "wheel_license_expression": "MIT",
+  "archive_private_file_exclusion": "PASS",
+  "git_ignore_checks": "PASS in separate temporary repository",
+  "relative_markdown_file_links": "PASS across 13 documents",
+  "ci_yaml_structure": "PASS; hosted execution NOT_RUN"
+}

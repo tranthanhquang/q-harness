@@ -1,0 +1,15 @@
+{
+  "fresh_virtualenv": true,
+  "live_model_provider": "NOT_RUN",
+  "projects": 1,
+  "repositories": 2,
+  "real_required_gates": 2,
+  "task": "COMPLETED",
+  "reports": [
+    "DOCX READY",
+    "XLSX READY"
+  ],
+  "http": "authenticated and missing-token checks passed",
+  "host": "macOS arm64",
+  "provider": "deterministic actions; real Docker tools/tests"
+}
