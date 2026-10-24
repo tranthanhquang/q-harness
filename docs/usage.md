@@ -98,8 +98,18 @@ Chọn tên model thực sự có quyền truy cập trong tài khoản. Nhập 
 ```bash
 export OPENAI_API_KEY="$(python -c 'import getpass; print(getpass.getpass("OpenAI API key: "))')"
 export QH_MODEL='ten-model-ban-co-quyen-truy-cap'
+# Optional: API root for an OpenAI-compatible gateway; omit /responses.
+export OPENAI_BASE_URL='https://openrouter.ai/api/v1'
 export QH_SANDBOX_IMAGE="$(docker image inspect q-harness-sandbox:dev --format '{{.Id}}')"
 ```
+
+`OPENAI_BASE_URL` defaults to `https://api.openai.com/v1`. For OpenRouter, use
+`https://openrouter.ai/api/v1`; for 9router or another gateway, use the API root
+provided by that service. The gateway must implement the OpenAI Responses API
+(`/responses`), including tool calling used by coding tasks. A gateway that only
+supports `/chat/completions` is not compatible with the current worker. Set the
+gateway's model identifier in `QH_MODEL` and its API key in `OPENAI_API_KEY`.
+Q-Harness passes the key to that gateway, so use a key issued for that provider.
 
 ### Tạo, approve, queue và chạy worker
 

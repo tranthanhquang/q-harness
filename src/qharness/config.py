@@ -4,7 +4,7 @@ import ipaddress
 import uuid
 from pathlib import Path
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -19,7 +19,13 @@ class Settings(BaseSettings):
     project_id: uuid.UUID | None = None
     model: str | None = None
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
+    openai_base_url: AnyHttpUrl | None = Field(default=None, validation_alias="OPENAI_BASE_URL")
     sandbox_image: str = "q-harness-sandbox:dev"
+
+    @field_validator("openai_base_url", mode="before")
+    @classmethod
+    def normalize_base_url(cls, value: str | AnyHttpUrl | None) -> str | AnyHttpUrl | None:
+        return value.strip() or None if isinstance(value, str) else value
 
     @field_validator("bind_host")
     @classmethod

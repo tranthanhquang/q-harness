@@ -19,6 +19,24 @@ class ScriptedProvider:
         return json.dumps(next(self.actions))
 
 
+def test_worker_forwards_custom_provider_endpoint(approved_task, monkeypatch: pytest.MonkeyPatch):
+    from unittest.mock import Mock
+
+    monkeypatch.setenv("QH_MODEL", "provider/model-name")
+    monkeypatch.setenv("OPENAI_API_KEY", "test-provider-key")
+    monkeypatch.setenv("OPENAI_BASE_URL", "https://gateway.example/api/v1")
+    provider = Mock(return_value=ScriptedProvider([{"tool": "finish"}]))
+    monkeypatch.setattr("qharness.interfaces.worker.OpenAIResponsesProvider", provider)
+    service, task = approved_task
+    service.create_execution(task.id)
+    execution = service.claim_next("test-worker")
+    assert execution
+    process_execution(service, execution)
+    provider.assert_called_once_with(
+        "provider/model-name", "test-provider-key", base_url="https://gateway.example/api/v1"
+    )
+
+
 @pytest.mark.e2e
 def test_worker_runs_two_repositories_and_persists_real_gates(
     database: Database, tmp_path: Path

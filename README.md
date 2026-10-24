@@ -21,7 +21,8 @@ not assume a published PyPI package.
 
 `qh ask` currently returns indexed excerpts and citations; it does not generate a
 conversational model answer. Registration, indexing, search, ask and reports need
-no model API key. Coding execution requires an OpenAI API key and an explicit model.
+no model API key. Coding execution requires the configured provider's API key and
+an explicit model.
 
 ## Requirements
 
@@ -32,7 +33,7 @@ no model API key. Coding execution requires an OpenAI API key and an explicit mo
 | Tools | Git, ripgrep, Docker with Compose v2 |
 | Database | PostgreSQL 18; Compose supplies a local instance |
 | Backup/test clients | PostgreSQL 18 `pg_dump` and `pg_restore` on `PATH` |
-| Coding execution | `OPENAI_API_KEY`, `QH_MODEL`, built sandbox image |
+| Coding execution | `OPENAI_API_KEY`, `QH_MODEL`, optional `OPENAI_BASE_URL`, built sandbox image |
 
 Node runs inside the sandbox; it is not required on the host for the bundled demo.
 The optional million-file benchmark needs at least 10 GB free in addition to images
@@ -61,6 +62,12 @@ These commands use the local development database defaults from
 are for local development. Q-Harness does **not** automatically load `.env`.
 For OS setup, configuration, restarting and troubleshooting, follow the
 [Vietnamese installation guide](docs/installation.md).
+
+For coding execution through OpenAI-compatible gateways such as OpenRouter, set
+`OPENAI_BASE_URL` to the provider's API root (for example,
+`https://openrouter.ai/api/v1`). The gateway must support the OpenAI Responses API;
+see [provider configuration](docs/usage.md#cấu-hình-provider). Q-Harness does not
+load `.env` automatically, so load the file into the worker's environment.
 
 ## First Project
 
