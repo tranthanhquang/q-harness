@@ -23,8 +23,16 @@ def test_service_requires_loopback_and_token(tmp_path: Path) -> None:
         )
 
 
-def test_model_use_requires_explicit_model_and_key(tmp_path: Path) -> None:
-    settings = Settings(database_url="postgresql+psycopg://u:p@localhost/db", data_dir=tmp_path)
+def test_model_use_requires_explicit_model_and_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.delenv("QH_MODEL", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    settings = Settings(
+        database_url="postgresql+psycopg://u:p@localhost/db",
+        data_dir=tmp_path,
+        model_provider="openai",
+    )
     with pytest.raises(ValueError, match="QH_MODEL"):
         settings.model_ready()
 

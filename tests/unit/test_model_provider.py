@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+from subprocess import CompletedProcess
 
 import httpx
 import pytest
@@ -60,3 +62,39 @@ def test_provider_routes_responses_request(
             "provider/model-name", "test-provider-key", base_url=base_url
         )
         assert provider.respond("Return a JSON action", "Fix demo") == '{"tool":"finish"}'
+
+
+def test_codex_provider_reuses_device_login_without_exposing_other_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    config = tmp_path / ".codex"
+    config.mkdir()
+    (config / "config.toml").write_text('model = "device-model"\n')
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setenv("CODEX_HOME", "/other-codex-home")
+    monkeypatch.setenv("CODEX_API_KEY", "separate-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "other-key")
+    monkeypatch.setattr(providers.shutil, "which", lambda _: "/usr/local/bin/codex")
+
+    def run(command: list[str], **kwargs: object) -> CompletedProcess[str]:
+        assert command[:3] == ["/usr/local/bin/codex", "-a", "never"]
+        assert command[command.index("-m") + 1] == "device-model"
+        assert "--ignore-user-config" in command
+        assert 'default_permissions="qh_read"' in command
+        assert (
+            'permissions.qh_read.filesystem={":root"="deny",":minimal"="read",":tmpdir"="deny",":slash_tmp"="deny"}'
+            in command
+        )
+        assert "--ephemeral" in command
+        schema = json.loads(Path(command[command.index("--output-schema") + 1]).read_text())
+        assert set(schema["required"]) == set(schema["properties"])
+        assert kwargs["env"] is not None
+        assert all(
+            name not in kwargs["env"] for name in ("CODEX_HOME", "CODEX_API_KEY", "OPENAI_API_KEY")
+        )
+        assert "Return JSON" in kwargs["input"]
+        return CompletedProcess(command, 0, '{"tool":"finish"}', "")
+
+    monkeypatch.setattr(providers.subprocess, "run", run)
+    assert providers.CodexCLIProvider().respond("Return JSON", "Fix demo") == '{"tool":"finish"}'

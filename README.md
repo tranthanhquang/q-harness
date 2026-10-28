@@ -21,8 +21,8 @@ not assume a published PyPI package.
 
 `qh ask` currently returns indexed excerpts and citations; it does not generate a
 conversational model answer. Registration, indexing, search, ask and reports need
-no model API key. Coding execution requires the configured provider's API key and
-an explicit model.
+no model API key. Coding execution uses the device's Codex CLI login by default;
+the direct Responses API provider remains available with explicit configuration.
 
 ## Requirements
 
@@ -33,7 +33,7 @@ an explicit model.
 | Tools | Git, ripgrep, Docker with Compose v2 |
 | Database | PostgreSQL 18; Compose supplies a local instance |
 | Backup/test clients | PostgreSQL 18 `pg_dump` and `pg_restore` on `PATH` |
-| Coding execution | `OPENAI_API_KEY`, `QH_MODEL`, optional `OPENAI_BASE_URL`, built sandbox image |
+| Coding execution | Codex CLI installed and signed in, plus built sandbox image; direct API is optional |
 
 Node runs inside the sandbox; it is not required on the host for the bundled demo.
 The optional million-file benchmark needs at least 10 GB free in addition to images
@@ -63,8 +63,15 @@ are for local development. Q-Harness does **not** automatically load `.env`.
 For OS setup, configuration, restarting and troubleshooting, follow the
 [Vietnamese installation guide](docs/installation.md).
 
+For coding tasks, run `codex login status` on the worker host. If needed, run
+`codex login` once with your normal device account. Q-Harness reuses that login
+without a separate `--profile` or API key. Codex runs in a read-only temporary
+directory and returns actions; Q-Harness still applies approval and test gates.
+The worker uses the model name from `~/.codex/config.toml` when present, while
+skipping personal hooks and plugins.
+
 For coding execution through OpenAI-compatible gateways such as OpenRouter, set
-`OPENAI_BASE_URL` to the provider's API root (for example,
+`QH_MODEL_PROVIDER=openai` and `OPENAI_BASE_URL` to the provider's API root (for example,
 `https://openrouter.ai/api/v1`). The gateway must support the OpenAI Responses API;
 see [provider configuration](docs/usage.md#cấu-hình-provider). Q-Harness does not
 load `.env` automatically, so load the file into the worker's environment.

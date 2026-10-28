@@ -16,8 +16,9 @@ Do not paste tokens, provider keys or credential-bearing connection URLs into lo
 | HTTP 403 / Project scope denied | Check `QH_PROJECT_ID`, URL Project ID, host and Origin. Use `127.0.0.1`; restarting with the intended Project is required to change service scope. |
 | Health shows `degraded` | Check `database`. Idle worker liveness is not currently tracked by the health endpoint; inspect task execution heartbeats and the worker terminal. |
 | Task stays `WAITING_APPROVAL` | Supply a scope file with registered repository paths, tools, executable names and explicit required gates. Then approve and queue it. |
-| Queued execution never starts | Run `qh worker` with the same database, model settings and sandbox image as the CLI. |
-| Missing model/key | Set `QH_MODEL` and `OPENAI_API_KEY` in the worker environment. No default model is selected. |
+| Queued execution never starts | Run `qh worker` with the same database and sandbox image as the CLI. |
+| Codex CLI unavailable or signed out | Install Codex CLI on the worker host, run `codex login`, then check `codex login status`. The default worker uses the device login. |
+| Missing model/key with `QH_MODEL_PROVIDER=openai` | Set `QH_MODEL` and `OPENAI_API_KEY` in the worker environment. |
 | Sandbox/render failure | Check `docker info` and `docker image inspect q-harness-sandbox:dev`. Build `Dockerfile.sandbox`; use `QH_SANDBOX_IMAGE` to select the immutable image ID. |
 | Required tests failed or `NOT_RUN` | Inspect `qh task status UUID --json`. Verify every gate's exact command and working directory; rerun after the last write. Missing gates cannot satisfy completion. |
 | `FILE_CONFLICT` | Inspect the externally changed file and resolve the conflict yourself. Refresh knowledge, then explicitly continue/reapprove. Q-Harness does not overwrite, merge or roll back the external change. |

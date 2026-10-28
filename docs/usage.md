@@ -99,15 +99,28 @@ bằng refresh trước khi dựa vào kết quả. Không cần full reindex ch
 
 ## 4. Giao task cho coding agent
 
-Đây là bước có thể sửa repository và gọi API tính phí. Dùng demo trước, đọc
+Đây là bước có thể sửa repository và dùng hạn mức Codex hoặc gọi API tính phí. Dùng demo trước, đọc
 approval scope và kiểm tra Git diff. Hủy task không tự hoàn tác những thay đổi đã ghi.
 
 ### Cấu hình provider
 
-Chọn tên model thực sự có quyền truy cập trong tài khoản. Nhập key bằng prompt
-ẩn để tránh ghi key trực tiếp vào lịch sử shell:
+Mặc định worker dùng phiên đăng nhập Codex CLI chung của máy. Cài Codex CLI,
+đăng nhập một lần trên máy chạy worker, rồi kiểm tra:
 
 ```bash
+codex login status
+```
+
+Không cần `--profile`, `QH_MODEL` hay `OPENAI_API_KEY`. Worker dùng xác thực trong
+`~/.codex` nhưng bỏ qua hooks/plugins/cấu hình cá nhân khi gọi model để giữ ranh giới
+Q-Harness; tên model trong `~/.codex/config.toml` được dùng nếu có. Codex trả action JSON từ thư mục
+tạm ở chế độ read-only; Q-Harness quyết định quyền ghi và kiểm thử.
+
+Nếu muốn dùng OpenRouter, 9router hoặc gateway khác, chọn provider API trực tiếp.
+Chọn tên model có quyền truy cập và nhập key bằng prompt ẩn:
+
+```bash
+export QH_MODEL_PROVIDER=openai
 export OPENAI_API_KEY="$(python -c 'import getpass; print(getpass.getpass("OpenAI API key: "))')"
 export QH_MODEL='ten-model-ban-co-quyen-truy-cap'
 # Optional: API root for an OpenAI-compatible gateway; omit /responses.

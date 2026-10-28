@@ -3,6 +3,7 @@ from __future__ import annotations
 import ipaddress
 import uuid
 from pathlib import Path
+from typing import Literal
 
 from pydantic import AnyHttpUrl, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,6 +18,7 @@ class Settings(BaseSettings):
     port: int = Field(default=8765, ge=1, le=65535)
     local_token: SecretStr | None = None
     project_id: uuid.UUID | None = None
+    model_provider: Literal["codex", "openai"] = "codex"
     model: str | None = None
     openai_api_key: SecretStr | None = Field(default=None, validation_alias="OPENAI_API_KEY")
     openai_base_url: AnyHttpUrl | None = Field(default=None, validation_alias="OPENAI_BASE_URL")

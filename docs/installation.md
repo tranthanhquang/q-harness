@@ -13,12 +13,15 @@ Chưa có hướng dẫn cài từ PyPI hoặc ứng dụng desktop/web.
 | Docker đang chạy, Compose v2 | PostgreSQL và sandbox thực thi test/report |
 | PostgreSQL 18 | Metadata; có thể dùng container trong `compose.yaml` |
 | Client PostgreSQL 18 | `pg_dump`, `pg_restore` cho backup và bộ test |
-| API key và model có quyền truy cập | Chỉ cần khi chạy coding agent |
+| Codex CLI đã đăng nhập | Mặc định dùng cho coding agent; chạy `codex login status` để kiểm tra |
+| API key và model có quyền truy cập | Chỉ cần nếu chọn `QH_MODEL_PROVIDER=openai` |
 | Các repository Git và một thư mục workspace | Dữ liệu của Project |
 
 Không cần Node trên host cho demo: Node có trong sandbox. Không cần API key để
-khởi tạo Project, index, search, ask hay tạo report. Coding agent có thể phát sinh
-chi phí API theo tài khoản của bạn.
+khởi tạo Project, index, search, ask hay tạo report. Coding agent dùng hạn mức
+Codex của tài khoản đã đăng nhập hoặc phát sinh chi phí API nếu chọn provider API.
+Nếu chưa có CLI, cài theo [hướng dẫn Codex CLI](https://learn.chatgpt.com/docs/codex/cli),
+sau đó chạy `codex login` trên máy chạy worker.
 
 Kết quả hiện có được đo trên macOS Apple M1, RAM 16 GiB; đây không phải cấu hình
 tối thiểu đã được xác nhận. Dành thêm dung lượng cho Docker image, database và
@@ -108,7 +111,8 @@ nháy phù hợp. Nên dùng đường dẫn tuyệt đối cho `QH_DATA_DIR` n�
 | `QH_DATA_DIR` | Thư mục dữ liệu/artifact, không chứa source repository |
 | `QH_PROJECT_ID` | UUID Project; chỉ thêm sau khi tạo Project, không để chuỗi rỗng |
 | `QH_LOCAL_TOKEN` | Token ít nhất 32 ký tự, bắt buộc cho HTTP/MCP |
-| `QH_MODEL`, `OPENAI_API_KEY` | Chỉ bắt buộc khi worker thực thi coding task |
+| `QH_MODEL_PROVIDER` | Mặc định `codex`, dùng phiên đăng nhập Codex CLI trên máy; đặt `openai` để gọi Responses API trực tiếp |
+| `QH_MODEL`, `OPENAI_API_KEY` | Chỉ bắt buộc khi `QH_MODEL_PROVIDER=openai` |
 | `QH_SANDBOX_IMAGE` | Tag hoặc image ID; mặc định `q-harness-sandbox:dev` |
 
 `qh serve --host ... --port ...` chọn địa chỉ HTTP rõ ràng. Chỉ dùng loopback.

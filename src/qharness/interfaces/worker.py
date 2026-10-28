@@ -15,7 +15,7 @@ from qharness.knowledge.models import IndexVersion
 from qharness.projects.git import inspect_repository
 from qharness.projects.models import Repository
 from qharness.runtime.agent import CodingAgent
-from qharness.runtime.providers import ModelProvider, OpenAIResponsesProvider
+from qharness.runtime.providers import CodexCLIProvider, ModelProvider, OpenAIResponsesProvider
 from qharness.tasks.approvals import scope_from_payload
 from qharness.tasks.models import Approval, Execution, ExecutionRepository, TaskRepository, WorkItem
 from qharness.tasks.service import TaskService
@@ -59,13 +59,17 @@ def process_execution(
             request = item.request
             scope = scope_from_payload(approval.scope)
         if provider is None:
-            settings = Settings().model_ready()
-            assert settings.model and settings.openai_api_key
-            provider = OpenAIResponsesProvider(
-                settings.model,
-                settings.openai_api_key.get_secret_value(),
-                base_url=str(settings.openai_base_url) if settings.openai_base_url else None,
-            )
+            settings = Settings()
+            if settings.model_provider == "codex":
+                provider = CodexCLIProvider()
+            else:
+                settings.model_ready()
+                assert settings.model and settings.openai_api_key
+                provider = OpenAIResponsesProvider(
+                    settings.model,
+                    settings.openai_api_key.get_secret_value(),
+                    base_url=str(settings.openai_base_url) if settings.openai_base_url else None,
+                )
         for repository_id, root in repositories.items():
             before = inspect_repository(root)
             with service.database.transaction() as session:
